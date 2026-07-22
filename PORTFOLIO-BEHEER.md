@@ -1,9 +1,9 @@
 # Portfolio-beheer
 
-`/portfolio` rendert de component `PortfolioConceptPage`: eerst de vier
-concept-showcases met de scroll-film, daarna het proces en onderaan de echte
-klantcases. De inhoud komt uit twee databestanden, dus voor nieuw werk hoef je
-geen React aan te raken.
+De nieuwe opzet staat los op `/portfolio-voorbeeld`. De bestaande pagina blijft
+op `/portfolio`, zodat beide versies naast elkaar beoordeeld kunnen worden.
+De voorbeeldroute staat op `noindex` en rendert de herbruikbare component
+`PortfolioConceptPage`.
 
 ## Een concept-showcase toevoegen
 
@@ -20,8 +20,14 @@ concepten zelf ("Bekijk 5 concepten").
 ## Een echte klantcase toevoegen
 
 Voeg de case toe aan `projecten` in `lib/projecten.ts` met `echt: true` en de
-detailvelden. De portfolio-pagina en de statische detailroute
-`/portfolio/[slug]` nemen de case dan automatisch mee.
+detailvelden. De actieve portfolio, het losse voorbeeld en de statische
+detailroute `/portfolio/[slug]` nemen de case dan automatisch mee.
+
+## De voorbeeldversie later activeren
+
+Laat `app/portfolio/page.tsx` na goedkeuring `PortfolioConceptPage` renderen in
+plaats van `PortfolioCurrentPage`. Verwijder daarna `/portfolio-voorbeeld` of
+laat die route op `noindex` staan. De inhoud hoeft niet te worden gekopieerd.
 
 ## Regels voor eerlijk bewijs
 
