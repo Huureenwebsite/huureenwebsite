@@ -632,6 +632,14 @@ a,button{-webkit-tap-highlight-color:transparent}
 .client-work-item>a{display:inline-flex;align-items:center;gap:7px;color:var(--blue);font-size:14.5px;font-weight:800;margin-top:16px;transition:gap .2s ease}
 .client-work-item>a:hover{gap:12px}
 
+/* Los voorbeeld: zichtbaar gescheiden van de actieve portfolio. */
+.portfolio-preview-bar{background:#edf2ff;border-bottom:1px solid #d8e1ff;color:var(--navy);padding:11px 0}
+.portfolio-preview-bar .container{display:flex;align-items:center;gap:13px;min-height:28px;font-size:13.5px}
+.portfolio-preview-bar span{background:var(--blue);color:#fff;border-radius:99px;padding:4px 10px;font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap}
+.portfolio-preview-bar p{color:var(--muted)}
+.portfolio-preview-bar a{display:inline-flex;align-items:center;gap:6px;color:var(--blue-dark);font-weight:800;margin-left:auto;white-space:nowrap;transition:gap .2s ease}
+.portfolio-preview-bar a:hover{gap:10px}
+
 @media (prefers-reduced-motion:reduce){
   .portfolio-hero-media img{animation:none}
   .portfolio-scroll-cue span{animation:none}
@@ -698,3 +706,8 @@ a,button{-webkit-tap-highlight-color:transparent}
   .client-work-section{padding:82px 0 60px}
 }
 
+@media (max-width:680px){
+  .portfolio-preview-bar .container{align-items:flex-start;flex-wrap:wrap;gap:7px 10px}
+  .portfolio-preview-bar p{flex:1;min-width:190px}
+  .portfolio-preview-bar a{width:100%;margin-left:0}
+}
