@@ -104,17 +104,6 @@ export const projecten: Project[] = [
       "Hosting & onderhoud",
     ],
   },
-  {
-    slug: "",
-    naam: "[Projectnaam 4]",
-    type: "Website · Maatwerk",
-    plaats: "",
-    sector: "",
-    kleur: "#8b5cf6",
-    accent: "#7c3aed",
-    kort: "Binnenkort: een nieuwe case.",
-    echt: false,
-  },
 ];
 
 export const echteCases = projecten.filter((p) => p.echt);

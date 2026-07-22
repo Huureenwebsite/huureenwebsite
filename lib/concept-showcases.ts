@@ -13,8 +13,7 @@ export type ConceptShowcase = {
 };
 
 // Groot sfeerbeeld voor de pagina-hero (nachtfinale van de zwembaden-demo, 2K).
-export const portfolioHeroImage =
-  "https://riverflowsbv.com/zwembaden/assets/frames/frame-11-2048.webp";
+export const portfolioHeroImage = "/showcases/hero-zwembad-nacht.webp";
 
 // De voor/na-beelden staan lokaal in /public/showcases: per concept twee frames
 // met exact hetzelfde camerastandpunt (anker + "af"-fase), zodat de slider klopt.

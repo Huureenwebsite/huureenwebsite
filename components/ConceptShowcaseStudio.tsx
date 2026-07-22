@@ -52,21 +52,23 @@ export default function ConceptShowcaseStudio() {
         aria-live="polite"
       >
         <div className="showcase-comparison" key={active.id}>
+          {/* Het eindbeeld ligt onderop; het beginbeeld wordt er links overheen
+              geklemd. Naar rechts slepen = de transformatie onthullen. */}
           <img
-            src={active.beforeImage}
-            alt={`Beginbeeld van conceptwebsite ${active.naam}`}
+            src={active.afterImage}
+            alt={`Eindbeeld van conceptwebsite ${active.naam}`}
             className="showcase-image"
             draggable={false}
           />
           <img
-            src={active.afterImage}
-            alt={`Eindbeeld van conceptwebsite ${active.naam}`}
+            src={active.beforeImage}
+            alt={`Beginbeeld van conceptwebsite ${active.naam}`}
             className="showcase-image showcase-image-after"
             style={{ clipPath: `inset(0 ${100 - reveal}% 0 0)` }}
             draggable={false}
           />
-          <span className="showcase-image-label is-after">Na</span>
           <span className="showcase-image-label is-before">Voor</span>
+          <span className="showcase-image-label is-after">Na</span>
           <span
             className="showcase-reveal-line"
             style={{ left: `${reveal}%` }}
