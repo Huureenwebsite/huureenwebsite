@@ -7,10 +7,26 @@
 // demo dekt de pagina én al z'n assets. Friendly namen (bv. /zwembadmaker) leiden
 // door naar het werkende pad.
 const DEMOS = [
-  { pad: "zwembaden", live: "https://riverflowsbv.com/zwembaden", alias: "zwembadmaker" },
-  { pad: "veranda", live: "https://riverflowsbv.com/veranda", alias: "verandameester" },
-  { pad: "carwrap", live: "https://riverflowsbv.com/carwrap", alias: "studiofolie" },
-  { pad: "houvenier", live: "https://riverflowsbv.com/houvenier", alias: "arbor-stone" },
+  {
+    pad: "zwembaden",
+    live: "https://riverflowsbv.com/zwembaden",
+    aliassen: ["zwembadmaker", "zwembad"],
+  },
+  {
+    pad: "veranda",
+    live: "https://riverflowsbv.com/veranda",
+    aliassen: ["verandameester"],
+  },
+  {
+    pad: "carwrap",
+    live: "https://riverflowsbv.com/carwrap",
+    aliassen: ["studiofolie"],
+  },
+  {
+    pad: "houvenier",
+    live: "https://riverflowsbv.com/houvenier",
+    aliassen: ["arbor-stone", "hovenier"],
+  },
 ];
 
 const nextConfig = {
@@ -31,11 +47,13 @@ const nextConfig = {
 
   async redirects() {
     // Merkbare namen → het werkende demo-pad.
-    return DEMOS.map((d) => ({
-      source: `/${d.alias}`,
-      destination: `/${d.pad}`,
-      permanent: false,
-    }));
+    return DEMOS.flatMap((d) =>
+      d.aliassen.map((alias) => ({
+        source: `/${alias}`,
+        destination: `/${d.pad}`,
+        permanent: false,
+      })),
+    );
   },
 };
 
