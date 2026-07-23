@@ -4,180 +4,52 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { ArrowRight } from "@/components/icons";
 import type { ShowcaseFilm as Film } from "@/lib/showcase-films";
 
-// Speler die de keyframe-sequentie van één scroll-film afspeelt.
+// Speler die de échte, vloeiende scroll-filmvideo van één concept toont.
 //
 // Interactiemodel (bewust gelijk voor mobiel en desktop, met per platform een
 // passende laag eroverheen):
-//  · IN BEELD → speelt de film één keer automatisch af (0→laatste frame), zodat
-//    iedereen — vooral mobiel, zonder hover — de transformatie zíet gebeuren
-//    zonder iets te doen. Daarna blijft het eindbeeld staan.
+//  · IN BEELD → de video speelt één keer automatisch af (muted, playsinline),
+//    zodat iedereen — vooral mobiel, zonder hover — de transformatie vloeiend
+//    ziet gebeuren zonder iets te doen. Daarna blijft het eindbeeld staan.
 //  · SCRUBBEN → sleep de tijdbalk (touch + muis) of, op desktop, beweeg de muis
-//    over het beeld: de cursor wordt de tijdlijn. Snapt naar het dichtstbijzijnde
-//    frame — net als de echte scrub-engine (nearest-frame, geen blending).
-//  · HERHALEN → knop op het beeld; op touch is tikken op het beeld ook herhalen.
+//    over het beeld: de cursor wordt de tijdlijn (video.currentTime).
+//  · HERHALEN → knop op het beeld; op touch tikt het beeld ook opnieuw af.
 //  · We kapen NOOIT de pagina-scroll (cruciaal op mobiel).
-//  · reduced-motion → geen autoplay; toont het eindbeeld, handmatig scrubben mag.
-
-const PLAY_MS = 2800; // duur van één automatische doorloop
+//  · reduced-motion → geen autoplay; toont de poster/het eindbeeld, scrubben mag.
 
 type Props = { film: Film; index: number };
 
 export default function ShowcaseFilm({ film, index }: Props) {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
-  const imgsRef = useRef<(HTMLImageElement | null)[]>([]);
-  const rafRef = useRef<number>(0);
-  const progressRef = useRef<number>(0); // altijd de actuele voortgang (0..1)
-  const playingRef = useRef<boolean>(false);
-  const playedRef = useRef<boolean>(false);
-  const prevFrameRef = useRef<number>(0);
+  const playedRef = useRef(false);
+  const scrubbingRef = useRef(false);
 
-  const [loaded, setLoaded] = useState(false);
-  const [progress, setProgress] = useState(0);
+  const [progress, setProgress] = useState(0); // 0..1
   const [playing, setPlaying] = useState(false);
   const [hasPlayed, setHasPlayed] = useState(false);
-  const [scrubbing, setScrubbing] = useState(false);
+  const [ready, setReady] = useState(false);
   const [reduceMotion, setReduceMotion] = useState(false);
 
-  const last = film.frameCount - 1;
-
-  const frameFloat = progress * last;
+  const frac = progress;
   const activeChapter = film.chapters.reduce(
-    (acc, c) => (frameFloat + 0.001 >= c.at ? c : acc),
+    (acc, c) => (frac + 0.0001 >= c.at ? c : acc),
     film.chapters[0],
   );
 
-  // --- Tekenen ---------------------------------------------------------------
-  const draw = useCallback(
-    (frac: number, blend = false) => {
-      const cv = canvasRef.current;
-      const ctx = cv?.getContext("2d");
-      if (!cv || !ctx) return;
-      const imgs = imgsRef.current;
-      const exact = frac * last;
-      const i = Math.round(exact);
-      const cur = imgs[i];
-      if (!cur) return;
-      const cover = (img: HTMLImageElement) => {
-        const s = Math.max(cv.width / img.width, cv.height / img.height);
-        const w = img.width * s;
-        const h = img.height * s;
-        ctx.drawImage(img, (cv.width - w) / 2, (cv.height - h) / 2, w, h);
-      };
-      ctx.clearRect(0, 0, cv.width, cv.height);
-      if (blend) {
-        const from = imgs[prevFrameRef.current];
-        const frac2 = exact - Math.floor(exact);
-        if (from && Math.floor(exact) !== i) {
-          ctx.globalAlpha = 1;
-          cover(from);
-          ctx.globalAlpha = frac2;
-          cover(cur);
-          ctx.globalAlpha = 1;
-        } else {
-          cover(cur);
-        }
-      } else {
-        cover(cur); // scrub/rust: snap naar dichtstbijzijnde frame
-      }
-      prevFrameRef.current = i;
-    },
-    [last],
-  );
+  const hoverCapable = () =>
+    typeof window !== "undefined" && window.matchMedia("(hover: hover)").matches;
 
-  const sizeCanvas = useCallback(() => {
-    const cv = canvasRef.current;
-    const stage = stageRef.current;
-    if (!cv || !stage) return;
-    const r = stage.getBoundingClientRect();
-    if (!r.width) return;
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    cv.width = Math.round(r.width * dpr);
-    cv.height = Math.round(r.height * dpr);
-    draw(progressRef.current); // altijd de actuele voortgang, nooit hard 0
-  }, [draw]);
-
-  const setProg = useCallback((p: number) => {
-    progressRef.current = p;
-    setProgress(p);
-  }, []);
-
-  // --- Afspelen (één rAF-loop, hard afgeschermd tegen dubbel starten) --------
-  const runPlay = useCallback(() => {
-    if (!loaded) return;
-    cancelAnimationFrame(rafRef.current);
-    playingRef.current = true;
+  // --- Autoplay één keer wanneer de film ruim in beeld staat -----------------
+  const playOnce = useCallback(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    v.muted = true;
+    v.currentTime = 0;
+    const pr = v.play();
+    if (pr && typeof pr.then === "function") pr.catch(() => {});
     setPlaying(true);
-    let start = 0;
-    const step = (t: number) => {
-      if (!playingRef.current) return; // afgebroken door scrub
-      if (!start) start = t;
-      const p = Math.min((t - start) / PLAY_MS, 1);
-      const eased = p < 0.5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2;
-      setProg(eased);
-      draw(eased, true);
-      if (p < 1) {
-        rafRef.current = requestAnimationFrame(step);
-      } else {
-        playingRef.current = false;
-        playedRef.current = true;
-        setProg(1);
-        draw(1); // eindbeeld hard vastzetten
-        setPlaying(false);
-        setHasPlayed(true);
-      }
-    };
-    rafRef.current = requestAnimationFrame(step);
-  }, [loaded, draw, setProg]);
-
-  const maybeAutoplay = useCallback(() => {
-    if (playedRef.current || playingRef.current) return;
-    runPlay();
-  }, [runPlay]);
-
-  const replay = useCallback(() => {
-    if (!loaded) return;
-    playedRef.current = false;
-    setProg(0);
-    draw(0);
-    runPlay();
-  }, [loaded, draw, setProg, runPlay]);
-
-  // --- Frames lazy laden zodra de kaart in de buurt komt ---------------------
-  useEffect(() => {
-    const stage = stageRef.current;
-    if (!stage) return;
-    let started = false;
-    const io = new IntersectionObserver(
-      (entries) => {
-        if (started || !entries.some((e) => e.isIntersecting)) return;
-        started = true;
-        io.disconnect();
-        const arr: (HTMLImageElement | null)[] = new Array(film.frameCount).fill(
-          null,
-        );
-        imgsRef.current = arr;
-        let done = 0;
-        for (let i = 0; i < film.frameCount; i++) {
-          const img = new Image();
-          const nn = String(i + 1).padStart(2, "0");
-          img.src = `${film.frameDir}/f${nn}.webp`;
-          img.onload = img.onerror = () => {
-            arr[i] = img;
-            done++;
-            if (done === 1) {
-              sizeCanvas();
-              draw(progressRef.current);
-            }
-            if (done === film.frameCount) setLoaded(true);
-          };
-        }
-      },
-      { rootMargin: "300px 0px" },
-    );
-    io.observe(stage);
-    return () => io.disconnect();
-  }, [film.frameCount, film.frameDir, draw, sizeCanvas]);
+  }, []);
 
   useEffect(() => {
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -188,27 +60,20 @@ export default function ShowcaseFilm({ film, index }: Props) {
   }, []);
 
   useEffect(() => {
-    window.addEventListener("resize", sizeCanvas);
-    return () => window.removeEventListener("resize", sizeCanvas);
-  }, [sizeCanvas]);
-
-  // --- Autoplay één keer wanneer de film ruim in beeld staat -----------------
-  useEffect(() => {
     const stage = stageRef.current;
-    if (!stage || !loaded) return;
-    if (reduceMotion) {
-      playedRef.current = true;
-      setProg(1);
-      draw(1);
-      setHasPlayed(true);
-      return;
-    }
+    if (!stage) return;
     const io = new IntersectionObserver(
       (entries) => {
         entries.forEach((e) => {
-          if (e.isIntersecting && e.intersectionRatio > 0.55) {
-            io.disconnect(); // maar één trigger — geen dubbele loops
-            maybeAutoplay();
+          if (
+            e.isIntersecting &&
+            e.intersectionRatio > 0.55 &&
+            !playedRef.current &&
+            !reduceMotion
+          ) {
+            playedRef.current = true;
+            io.disconnect();
+            playOnce();
           }
         });
       },
@@ -216,27 +81,41 @@ export default function ShowcaseFilm({ film, index }: Props) {
     );
     io.observe(stage);
     return () => io.disconnect();
-  }, [loaded, reduceMotion, maybeAutoplay, draw, setProg]);
+  }, [playOnce, reduceMotion]);
+
+  // --- Video-events → voortgang ---------------------------------------------
+  const onTime = () => {
+    const v = videoRef.current;
+    if (!v || !v.duration) return;
+    if (!scrubbingRef.current) setProgress(v.currentTime / v.duration);
+  };
+  const onEnded = () => {
+    setPlaying(false);
+    setHasPlayed(true);
+  };
 
   // --- Scrubben --------------------------------------------------------------
-  const scrubToClientX = useCallback(
-    (clientX: number) => {
-      const stage = stageRef.current;
-      if (!stage) return;
-      const r = stage.getBoundingClientRect();
-      const p = Math.min(1, Math.max(0, (clientX - r.left) / r.width));
-      playingRef.current = false; // breekt een lopende autoplay netjes af
-      cancelAnimationFrame(rafRef.current);
-      setPlaying(false);
-      setProg(p);
-      draw(p);
-    },
-    [draw, setProg],
-  );
+  const scrubToClientX = useCallback((clientX: number) => {
+    const stage = stageRef.current;
+    const v = videoRef.current;
+    if (!stage || !v || !v.duration) return;
+    const r = stage.getBoundingClientRect();
+    const p = Math.min(1, Math.max(0, (clientX - r.left) / r.width));
+    v.pause();
+    v.currentTime = p * v.duration;
+    setPlaying(false);
+    setProgress(p);
+  }, []);
 
-  const hoverCapable = () =>
-    typeof window !== "undefined" &&
-    window.matchMedia("(hover: hover)").matches;
+  const replay = useCallback(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    v.muted = true;
+    v.currentTime = 0;
+    const pr = v.play();
+    if (pr && typeof pr.then === "function") pr.catch(() => {});
+    setPlaying(true);
+  }, []);
 
   return (
     <article className="film" style={{ ["--film-accent" as string]: film.accent }}>
@@ -245,14 +124,27 @@ export default function ShowcaseFilm({ film, index }: Props) {
           ref={stageRef}
           className="film-stage"
           onMouseMove={(e) => {
-            if (hoverCapable() && loaded && hasPlayed) scrubToClientX(e.clientX);
+            if (hoverCapable() && hasPlayed) scrubToClientX(e.clientX);
           }}
           onClick={() => {
             if (!hoverCapable()) replay();
           }}
         >
-          <canvas ref={canvasRef} className="film-canvas" />
-          {!loaded && <div className="film-skeleton" aria-hidden="true" />}
+          <video
+            ref={videoRef}
+            className="film-video"
+            src={film.video}
+            poster={film.poster}
+            muted
+            playsInline
+            preload="metadata"
+            onLoadedData={() => setReady(true)}
+            onTimeUpdate={onTime}
+            onEnded={onEnded}
+            onPlay={() => setPlaying(true)}
+            onPause={() => setPlaying(false)}
+          />
+          {!ready && <div className="film-skeleton" aria-hidden="true" />}
 
           <span className="film-badge">Conceptwebsite · fictief merk</span>
 
@@ -281,7 +173,7 @@ export default function ShowcaseFilm({ film, index }: Props) {
 
         {/* Tijdbalk: slepen om zelf door de film te scrubben (touch + muis). */}
         <div
-          className={`film-track${scrubbing ? " is-scrubbing" : ""}`}
+          className={`film-track${scrubbingRef.current ? " is-scrubbing" : ""}`}
           role="slider"
           aria-label={`Scrub door de transformatie van ${film.merk}`}
           aria-valuemin={0}
@@ -290,25 +182,30 @@ export default function ShowcaseFilm({ film, index }: Props) {
           tabIndex={0}
           onPointerDown={(e) => {
             e.currentTarget.setPointerCapture(e.pointerId);
-            setScrubbing(true);
+            scrubbingRef.current = true;
             scrubToClientX(e.clientX);
           }}
-          onPointerMove={(e) => scrubbing && scrubToClientX(e.clientX)}
-          onPointerUp={() => setScrubbing(false)}
-          onPointerCancel={() => setScrubbing(false)}
+          onPointerMove={(e) => {
+            if (scrubbingRef.current) scrubToClientX(e.clientX);
+          }}
+          onPointerUp={() => {
+            scrubbingRef.current = false;
+          }}
+          onPointerCancel={() => {
+            scrubbingRef.current = false;
+          }}
           onKeyDown={(e) => {
+            const v = videoRef.current;
+            if (!v || !v.duration) return;
             if (e.key === "ArrowRight" || e.key === "ArrowLeft") {
               e.preventDefault();
-              const stepFrac = 1 / last;
-              const next =
-                e.key === "ArrowRight"
-                  ? Math.min(1, progress + stepFrac)
-                  : Math.max(0, progress - stepFrac);
-              playingRef.current = false;
-              cancelAnimationFrame(rafRef.current);
-              setPlaying(false);
-              setProg(next);
-              draw(next);
+              v.pause();
+              const stepS = v.duration / 20;
+              v.currentTime = Math.min(
+                v.duration,
+                Math.max(0, v.currentTime + (e.key === "ArrowRight" ? stepS : -stepS)),
+              );
+              setProgress(v.currentTime / v.duration);
             }
           }}
         >
@@ -318,7 +215,7 @@ export default function ShowcaseFilm({ film, index }: Props) {
             <span
               key={c.at}
               className="film-track-tick"
-              style={{ left: `${(c.at / last) * 100}%` }}
+              style={{ left: `${c.at * 100}%` }}
               aria-hidden="true"
             />
           ))}
@@ -347,7 +244,7 @@ export default function ShowcaseFilm({ film, index }: Props) {
           rel="noopener noreferrer"
           className="film-live"
         >
-          Speel de volledige scroll-film af <ArrowRight size={17} />
+          Bekijk de volledige website <ArrowRight size={17} />
         </a>
       </div>
     </article>

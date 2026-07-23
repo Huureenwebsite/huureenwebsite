@@ -1,14 +1,13 @@
-// Data voor de "film-first" portfolio: elk concept toont niet twee losse
-// eindbeelden maar de échte keyframe-sequentie van de scroll-film. De speler
-// (components/ShowcaseFilm.tsx) speelt die frames af — in beeld automatisch één
-// keer, daarna zelf te scrubben. Zo zie je de transformatie gebeuren i.p.v. een
-// slider tussen begin en eind.
+// Data voor de "film-first" portfolio: elk concept toont de échte, vloeiende
+// scroll-filmvideo (de aan elkaar gezette Seedance-bouwsegmenten). De speler
+// (components/ShowcaseFilm.tsx) speelt de video af — in beeld automatisch één
+// keer, daarna zelf te scrubben. Zo zie je de transformatie vloeiend gebeuren.
 //
-// Frames staan in /public/showcases/<id>/f01.webp … fNN.webp (anker → af → orbit
-// naar avond). De chapters zijn hoog-over hoofdstukken met een startframe-index,
-// zodat de speler een label kan tonen dat met de film meeloopt.
+// Video's + posters staan in /public/films/<id>.mp4 en <id>-poster.webp.
+// Chapters hebben een fractie (0..1) van de looptijd, zodat het label met de
+// video meeloopt ongeacht de duur.
 
-export type FilmChapter = { at: number; label: string };
+export type FilmChapter = { at: number; label: string }; // at = fractie 0..1
 
 export type ShowcaseFilm = {
   id: string;
@@ -16,13 +15,13 @@ export type ShowcaseFilm = {
   niche: string;
   tagline: string;
   verhaal: string;
-  techniekLabel: string; // korte technische duiding op de kaart
+  techniekLabel: string;
   doorlooptijd: string;
-  liveUrl: string;
-  frameDir: string; // pad zonder trailing slash
-  frameCount: number;
+  liveUrl: string; // de volledige scroll-film, live
+  video: string;
+  poster: string;
   chapters: FilmChapter[]; // oplopend op `at`
-  accent: string; // niche-accentkleur voor de voortgangsbalk
+  accent: string;
 };
 
 export const heroPoster = "/showcases/hero-zwembad-nacht.webp";
@@ -34,17 +33,17 @@ export const showcaseFilms: ShowcaseFilm[] = [
     niche: "Zwembadbouw",
     tagline: "Van leeg gazon tot avondzwembad.",
     verhaal:
-      "Eén vast camerastandpunt, de tuin die zich laag voor laag opbouwt tot een compleet zwembad — en in de laatste beelden gaat de verlichting aan.",
-    techniekLabel: "11 keyframes · locked-camera AI-timelapse",
+      "Eén vast camerastandpunt, de tuin die zich laag voor laag opbouwt tot een compleet zwembad — en in de finale gaat de verlichting aan.",
+    techniekLabel: "AI-bouwfilm · locked camera",
     doorlooptijd: "±2 weken van intake tot live",
-    liveUrl: "https://riverflowsbv.com/zwembaden",
-    frameDir: "/showcases/zwembaden",
-    frameCount: 11,
+    liveUrl: "/zwembadmaker",
+    video: "/films/zwembaden.mp4",
+    poster: "/films/zwembaden-poster.webp",
     chapters: [
       { at: 0, label: "De lege tuin" },
-      { at: 2, label: "De aanleg" },
-      { at: 6, label: "Oplevering" },
-      { at: 8, label: "Avondlicht" },
+      { at: 0.16, label: "De aanleg" },
+      { at: 0.55, label: "Oplevering" },
+      { at: 0.72, label: "Avondlicht" },
     ],
     accent: "#22c1c8",
   },
@@ -55,16 +54,16 @@ export const showcaseFilms: ShowcaseFilm[] = [
     tagline: "Van kale gevel tot buitenkamer.",
     verhaal:
       "Een leeg terras krijgt fundering, aluminium constructie, glas en afwerking — en verandert in de finale bij avondlicht in een warme leefruimte.",
-    techniekLabel: "11 keyframes · dag-naar-nacht-orbit",
+    techniekLabel: "AI-bouwfilm · dag-naar-nacht",
     doorlooptijd: "±2 weken van intake tot live",
-    liveUrl: "https://riverflowsbv.com/veranda",
-    frameDir: "/showcases/veranda",
-    frameCount: 11,
+    liveUrl: "/verandameester",
+    video: "/films/veranda.mp4",
+    poster: "/films/veranda-poster.webp",
     chapters: [
       { at: 0, label: "Kale gevel" },
-      { at: 2, label: "De constructie" },
-      { at: 6, label: "Oplevering" },
-      { at: 8, label: "Avondlicht" },
+      { at: 0.16, label: "De constructie" },
+      { at: 0.62, label: "Oplevering" },
+      { at: 0.8, label: "Avondlicht" },
     ],
     accent: "#e0a04a",
   },
@@ -75,16 +74,16 @@ export const showcaseFilms: ShowcaseFilm[] = [
     tagline: "Van moe naar magnetisch.",
     verhaal:
       "Een doffe coupé wordt gepolijst, gewrapt en gedetaild. In de laatste beelden draait het licht weg en neemt de satijnglans het beeld over.",
-    techniekLabel: "11 keyframes · studio-orbit",
+    techniekLabel: "AI-studiofilm · orbit",
     doorlooptijd: "±2 weken van intake tot live",
-    liveUrl: "https://riverflowsbv.com/carwrap",
-    frameDir: "/showcases/carwrap",
-    frameCount: 11,
+    liveUrl: "/studiofolie",
+    video: "/films/carwrap.mp4",
+    poster: "/films/carwrap-poster.webp",
     chapters: [
       { at: 0, label: "Doffe coupé" },
-      { at: 2, label: "Prep & wrap" },
-      { at: 6, label: "Detailing" },
-      { at: 8, label: "Showtime" },
+      { at: 0.16, label: "Prep & wrap" },
+      { at: 0.5, label: "Detailing" },
+      { at: 0.7, label: "Showtime" },
     ],
     accent: "#c9a227",
   },
@@ -95,16 +94,16 @@ export const showcaseFilms: ShowcaseFilm[] = [
     tagline: "Van verwilderd tot verblijfstuin.",
     verhaal:
       "Dezelfde achtertuin in vier fases: verwilderd, gestript, uitgevlakt op een zandbed en opnieuw bestraat tot een strak terras.",
-    techniekLabel: "4 fases · vaste-camera transformatie",
+    techniekLabel: "Fase-transformatie · vaste camera",
     doorlooptijd: "±2 weken van intake tot live",
-    liveUrl: "https://riverflowsbv.com/houvenier",
-    frameDir: "/showcases/houvenier",
-    frameCount: 4,
+    liveUrl: "/arbor-stone",
+    video: "/films/houvenier.mp4",
+    poster: "/films/houvenier-poster.webp",
     chapters: [
       { at: 0, label: "Verwilderd" },
-      { at: 1, label: "Gestript" },
-      { at: 2, label: "Zandbed" },
-      { at: 3, label: "Nieuw terras" },
+      { at: 0.26, label: "Gestript" },
+      { at: 0.48, label: "Zandbed" },
+      { at: 0.7, label: "Nieuw terras" },
     ],
     accent: "#6ea63a",
   },

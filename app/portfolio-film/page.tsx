@@ -57,9 +57,10 @@ export default function PortfolioFilm() {
             gebeuren.
           </h1>
           <p className="filmpage-lead">
-            Geen slider tussen begin en eind. In elk voorbeeld speelt de échte
-            filmsequentie af — automatisch als je erlangs scrolt, daarna scrub je
-            er zelf doorheen. Precies de techniek die we voor jouw vak inzetten.
+            Geen slider tussen begin en eind. In elk voorbeeld speelt de échte,
+            vloeiende transformatiefilm af — automatisch als je erlangs scrolt,
+            daarna scrub je er zelf doorheen. Precies de techniek die we voor jouw
+            vak inzetten.
           </p>
           <div className="hero-cta">
             <Link href="#films" className="btn btn-primary">
