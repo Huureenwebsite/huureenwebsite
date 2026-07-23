@@ -63,7 +63,7 @@ export default function PortfolioFilm() {
           </p>
           <div className="hero-cta">
             <Link href="#klanten" className="btn btn-primary">
-              Bekijk echte klanten <ArrowRight size={17} />
+              Bekijk klantcases <ArrowRight size={17} />
             </Link>
             <Link href="#films" className="btn filmpage-hero-ghost">
               Signature scroll-film
@@ -71,7 +71,7 @@ export default function PortfolioFilm() {
           </div>
           <ul className="filmpage-hero-stats">
             <li>
-              <strong>{echteCases.length}</strong> live klantsites
+              <strong>Live</strong> klantcases online
             </li>
             <li>
               <strong>{showcaseFilms.length}</strong> signature concepten
@@ -89,14 +89,14 @@ export default function PortfolioFilm() {
           <div className="filmpage-head">
             <div>
               <p className="filmpage-kicker is-green">
-                <Check size={15} /> Live · echte klanten
+                <Check size={15} /> Klantcases
               </p>
-              <h2>Gebouwd voor echte ondernemers.</h2>
+              <h2>Een greep uit ons werk.</h2>
             </div>
             <p>
-              Dit zijn geen mockups. Elke site hieronder staat online en werkt
-              voor een echt bedrijf — bekijk de live preview of open de volledige
-              case.
+              Een selectie van websites die we voor ondernemers bouwden. Geen
+              mockups: elke site hieronder staat live — bekijk de preview of open
+              de volledige case.
             </p>
           </div>
 
@@ -169,7 +169,7 @@ export default function PortfolioFilm() {
               <strong>Eerlijk over dit deel.</strong> Dit zijn conceptwebsites die
               we zelf ontwikkelden om onze techniek te tonen. De merknamen zijn
               fictief; deze voorbeelden vertegenwoordigen geen echte klanten of
-              klantresultaten — anders dan de live klantsites hierboven.
+              klantresultaten — anders dan de klantcases hierboven.
             </p>
           </div>
 
