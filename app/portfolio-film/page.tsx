@@ -8,9 +8,9 @@ import { echteCases } from "@/lib/projecten";
 import { ArrowRight, Check, Info } from "@/components/icons";
 
 export const metadata: Metadata = {
-  title: "Concept-showcases: de transformatie zelf",
+  title: "Portfolio: echte klanten & signature scroll-film",
   description:
-    "Vier conceptwebsites waarin je de scroll-filmtransformatie zelf ziet afspelen — geen slider, maar de echte beeldsequentie. Plus ons proces en echte klantcases.",
+    "Live websites die we voor echte ondernemers bouwden, plus onze signature scroll-film concept-showcases. Bekijk het werk en ontdek onze aanpak.",
   robots: { index: false, follow: false },
   alternates: { canonical: "/portfolio-film" },
 };
@@ -20,25 +20,25 @@ const proces = [
     n: "01",
     titel: "Intake & kans",
     tekst:
-      "Niet de animatie staat voorop, maar de verandering die jouw beste klant wil kopen. Doelgroep, kernbezwaar en gewenste aanvraag eerst.",
+      "Niet de techniek staat voorop, maar wat jouw beste klant wil kopen. Doelgroep, kernbezwaar en gewenste aanvraag eerst.",
   },
   {
     n: "02",
-    titel: "AI-regie & storyboard",
+    titel: "Ontwerp & regie",
     tekst:
-      "We kiezen één vast camerastandpunt en zetten jouw echte werkvolgorde om in 6–11 sleutelbeelden. Jij keurt die goed vóór de filmproductie.",
+      "We ontwerpen een eigen huisstijl en, waar het past, een scroll-film: één vast camerastandpunt en jouw echte werkvolgorde als sleutelbeelden.",
   },
   {
     n: "03",
-    titel: "Bouw & scroll-film",
+    titel: "Bouw",
     tekst:
-      "De beelden worden geanimeerd, opgeschaald en frame voor frame in een snelle website gebouwd. Desktop en mobiel krijgen elk de juiste beeldtier.",
+      "Razendsnelle, mobielvriendelijke code. Diensten, werkwijze, reviews, FAQ en een werkend formulier — desktop en mobiel op de juiste beeldtier.",
   },
   {
     n: "04",
-    titel: "Live & leren",
+    titel: "Live & onderhoud",
     tekst:
-      "Na performance-, toegankelijkheids- en mobiele tests gaat de site live. Daarna meten we echte aandacht en aanvragen — geen verzonnen succesclaims.",
+      "Binnen twee weken online en vindbaar in Google. Daarna houden wij alles in topconditie, voor één vast bedrag per maand.",
   },
 ];
 
@@ -50,53 +50,126 @@ export default function PortfolioFilm() {
           <img src={heroPoster} alt="" fetchPriority="high" />
         </div>
         <div className="container filmpage-hero-inner">
-          <p className="filmpage-kicker">Concept-showcases · Signature scroll-film</p>
+          <p className="filmpage-kicker">Portfolio</p>
           <h1>
-            Zie de transformatie
+            Live voor klanten.
             <br />
-            gebeuren.
+            En wat we verder kunnen.
           </h1>
           <p className="filmpage-lead">
-            Geen slider tussen begin en eind. Klik een voorbeeld aan en de échte,
-            vloeiende transformatiefilm speelt af — daarna scrub je er zelf
-            doorheen. Precies de techniek die we voor jouw vak inzetten.
+            Echte websites die elke dag draaien voor ondernemers door heel
+            Nederland — plus onze signature scroll-film, waarmee we laten zien hoe
+            ver we voor een branche durven te gaan.
           </p>
           <div className="hero-cta">
-            <Link href="#films" className="btn btn-primary">
-              Bekijk de 4 films <ArrowRight size={17} />
+            <Link href="#klanten" className="btn btn-primary">
+              Bekijk echte klanten <ArrowRight size={17} />
             </Link>
-            <Link href="/contact" className="btn filmpage-hero-ghost">
-              Bespreek jouw verhaal
+            <Link href="#films" className="btn filmpage-hero-ghost">
+              Signature scroll-film
             </Link>
           </div>
-          <p className="filmpage-disclosure">
-            <Info size={17} /> Eigen conceptwerk met fictieve merknamen — geen
-            klantcases.
-          </p>
+          <ul className="filmpage-hero-stats">
+            <li>
+              <strong>{echteCases.length}</strong> live klantsites
+            </li>
+            <li>
+              <strong>{showcaseFilms.length}</strong> signature concepten
+            </li>
+            <li>
+              <strong>±2 wk</strong> van intake tot live
+            </li>
+          </ul>
         </div>
       </section>
 
+      {/* ECHTE KLANTEN — meteen na de hero, prominent */}
+      <section className="filmpage-clients" id="klanten">
+        <div className="container">
+          <div className="filmpage-head">
+            <div>
+              <p className="filmpage-kicker is-green">
+                <Check size={15} /> Live · echte klanten
+              </p>
+              <h2>Gebouwd voor echte ondernemers.</h2>
+            </div>
+            <p>
+              Dit zijn geen mockups. Elke site hieronder staat online en werkt
+              voor een echt bedrijf — bekijk de live preview of open de volledige
+              case.
+            </p>
+          </div>
+
+          <div className="clients-grid">
+            {echteCases.map((c) => (
+              <article className="client-card" key={c.slug}>
+                <Link
+                  href={`/portfolio/${c.slug}`}
+                  className="client-card-preview"
+                  aria-label={`Bekijk de case van ${c.naam}`}
+                >
+                  <SitePreview
+                    url={c.liveUrl}
+                    naam={c.naam}
+                    kleur={c.kleur}
+                    accent={c.accent}
+                    ratio={0.62}
+                  />
+                  <span className="client-card-live">
+                    <span className="client-card-live-dot" /> Live
+                  </span>
+                </Link>
+                <div className="client-card-body">
+                  <p className="client-card-sector">
+                    {c.sector}
+                    {c.plaats ? ` · ${c.plaats}` : ""}
+                  </p>
+                  <h3>{c.naam}</h3>
+                  <p className="client-card-kort">{c.kort}</p>
+                  <div className="client-card-links">
+                    <Link href={`/portfolio/${c.slug}`} className="client-card-case">
+                      Bekijk de case <ArrowRight size={15} />
+                    </Link>
+                    {c.liveUrl && (
+                      <a
+                        href={c.liveUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="client-card-live-link"
+                      >
+                        Live site
+                      </a>
+                    )}
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* SIGNATURE CONCEPT-SHOWCASES */}
       <section className="filmpage-films" id="films">
         <div className="container">
           <div className="filmpage-head">
             <div>
-              <p className="filmpage-kicker is-dark">Vier niches. Eén regieprincipe.</p>
-              <h2>De film ís het portfolio.</h2>
+              <p className="filmpage-kicker is-dark">Signature scroll-film</p>
+              <h2>Wat we verder kunnen: concept-showcases.</h2>
             </div>
             <p>
-              Klik op een film om hem te laden en af te spelen — zo blijft de
-              pagina licht. Daarna bepaal jij het tempo: sleep de tijdbalk, of
-              beweeg op desktop gewoon over het beeld.
+              Vier eigen conceptwebsites met onze scroll-filmtechniek. Klik een
+              film om hem te laden en af te spelen — zo blijft de pagina licht.
+              Daarna scrub je er zelf doorheen.
             </p>
           </div>
 
           <div className="filmpage-disclaimer">
             <Info size={19} />
             <p>
-              <strong>Eerlijk over het werk.</strong> Dit zijn conceptwebsites die
-              we zelf ontwikkelden om onze aanpak en techniek te tonen. De
-              merknamen zijn fictief; de voorbeelden vertegenwoordigen geen echte
-              klanten of klantresultaten.
+              <strong>Eerlijk over dit deel.</strong> Dit zijn conceptwebsites die
+              we zelf ontwikkelden om onze techniek te tonen. De merknamen zijn
+              fictief; deze voorbeelden vertegenwoordigen geen echte klanten of
+              klantresultaten — anders dan de live klantsites hierboven.
             </p>
           </div>
 
@@ -108,18 +181,18 @@ export default function PortfolioFilm() {
         </div>
       </section>
 
+      {/* PROCES */}
       <section className="filmpage-proces">
         <div className="container filmpage-proces-grid">
           <div className="filmpage-proces-intro">
-            <p className="filmpage-kicker is-dark">Zo maken we jouw site</p>
-            <h2>Voor de film komt de regie.</h2>
+            <p className="filmpage-kicker is-dark">Zo werken we</p>
+            <h2>Van eerste gesprek tot live.</h2>
             <p>
-              AI versnelt de productie. Het overtuigende deel blijft mensenwerk: de
-              juiste belofte kiezen, jouw werkwijze begrijpen en elk beeld
-              doelgericht laten bijdragen aan de aanvraag.
+              Dezelfde aanpak voor een strakke huurwebsite én voor een Signature
+              scroll-film. Jij vertelt over je bedrijf, wij maken het compleet af.
             </p>
             <Link href="/contact" className="filmpage-proces-link">
-              Leg jouw transformatie aan ons voor <ArrowRight size={17} />
+              Plan een gratis adviesgesprek <ArrowRight size={17} />
             </Link>
           </div>
           <ol className="filmpage-proces-list">
@@ -136,47 +209,9 @@ export default function PortfolioFilm() {
         </div>
       </section>
 
-      <section className="filmpage-clients">
-        <div className="container">
-          <div className="filmpage-head is-light">
-            <div>
-              <p className="filmpage-kicker is-dark">Daarnaast: echt klantwerk</p>
-              <h2>Gebouwd voor ondernemers.</h2>
-            </div>
-            <p>
-              Hier staan wél echte klanten. Bewust apart van de concepten, zodat
-              altijd duidelijk blijft welk bewijs je bekijkt.
-            </p>
-          </div>
-          <div className="filmpage-clients-grid">
-            {echteCases.map((c) => (
-              <article className="filmpage-client" key={c.slug} data-reveal>
-                <div className="filmpage-client-preview">
-                  <SitePreview
-                    url={c.liveUrl}
-                    naam={c.naam}
-                    kleur={c.kleur}
-                    accent={c.accent}
-                    ratio={0.56}
-                  />
-                </div>
-                <p className="filmpage-client-label">
-                  <Check size={14} /> Echte klantcase
-                </p>
-                <h3>{c.naam}</h3>
-                <p>{c.kort}</p>
-                <Link href={`/portfolio/${c.slug}`}>
-                  Bekijk de case <ArrowRight size={16} />
-                </Link>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
-
       <CtaBand
-        titel="Welke transformatie moet jouw klant voor zich zien?"
-        tekst="Vertel ons over je beste dienst. In een vrijblijvend adviesgesprek bepalen we of een gewone huurwebsite of een Signature scroll-film het sterkste verhaal vertelt."
+        titel="Wil je zulk werk voor jouw bedrijf?"
+        tekst="Vertel ons over je beste dienst. In een vrijblijvend adviesgesprek bepalen we of een strakke huurwebsite of een Signature scroll-film het sterkste verhaal vertelt."
         knop="Plan een gratis adviesgesprek"
       />
     </div>
