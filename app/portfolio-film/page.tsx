@@ -57,10 +57,9 @@ export default function PortfolioFilm() {
             gebeuren.
           </h1>
           <p className="filmpage-lead">
-            Geen slider tussen begin en eind. In elk voorbeeld speelt de échte,
-            vloeiende transformatiefilm af — automatisch als je erlangs scrolt,
-            daarna scrub je er zelf doorheen. Precies de techniek die we voor jouw
-            vak inzetten.
+            Geen slider tussen begin en eind. Klik een voorbeeld aan en de échte,
+            vloeiende transformatiefilm speelt af — daarna scrub je er zelf
+            doorheen. Precies de techniek die we voor jouw vak inzetten.
           </p>
           <div className="hero-cta">
             <Link href="#films" className="btn btn-primary">
@@ -85,9 +84,9 @@ export default function PortfolioFilm() {
               <h2>De film ís het portfolio.</h2>
             </div>
             <p>
-              Elk voorbeeld speelt zichzelf één keer af zodra het in beeld komt.
-              Daarna bepaal jij het tempo: sleep de tijdbalk — op desktop beweeg je
-              gewoon over het beeld.
+              Klik op een film om hem te laden en af te spelen — zo blijft de
+              pagina licht. Daarna bepaal jij het tempo: sleep de tijdbalk, of
+              beweeg op desktop gewoon over het beeld.
             </p>
           </div>
 

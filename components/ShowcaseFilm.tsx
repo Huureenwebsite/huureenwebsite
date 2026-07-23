@@ -1,100 +1,61 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { ArrowRight } from "@/components/icons";
 import type { ShowcaseFilm as Film } from "@/lib/showcase-films";
 
 // Speler die de échte, vloeiende scroll-filmvideo van één concept toont.
 //
-// Interactiemodel (bewust gelijk voor mobiel en desktop, met per platform een
-// passende laag eroverheen):
-//  · IN BEELD → de video speelt één keer automatisch af (muted, playsinline),
-//    zodat iedereen — vooral mobiel, zonder hover — de transformatie vloeiend
-//    ziet gebeuren zonder iets te doen. Daarna blijft het eindbeeld staan.
-//  · SCRUBBEN → sleep de tijdbalk (touch + muis) of, op desktop, beweeg de muis
-//    over het beeld: de cursor wordt de tijdlijn (video.currentTime).
-//  · HERHALEN → knop op het beeld; op touch tikt het beeld ook opnieuw af.
-//  · We kapen NOOIT de pagina-scroll (cruciaal op mobiel).
-//  · reduced-motion → geen autoplay; toont de poster/het eindbeeld, scrubben mag.
+// Bewust klik-om-te-starten (geen autoplay): standaard laadt alleen de poster
+// (preload="none"), zodat de pagina licht blijft en er geen data verbruikt wordt
+// tot de bezoeker een film echt wil zien. Pas bij de eerste klik wordt de video
+// geladen en afgespeeld.
+//
+//  · START → klik op het beeld of de afspeelknop → video laadt en speelt af.
+//  · SCRUBBEN → sleep de tijdbalk (touch + muis) of, op desktop na het spelen,
+//    beweeg over het beeld (cursor = tijdlijn, video.currentTime).
+//  · PAUZE/HERVAT → klik tijdens het spelen; opnieuw vanaf het eindbeeld.
+//  · Kaapt nooit de pagina-scroll.
 
 type Props = { film: Film; index: number };
 
 export default function ShowcaseFilm({ film, index }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
-  const playedRef = useRef(false);
   const scrubbingRef = useRef(false);
 
+  const [started, setStarted] = useState(false); // is er ooit afgespeeld?
   const [progress, setProgress] = useState(0); // 0..1
   const [playing, setPlaying] = useState(false);
-  const [hasPlayed, setHasPlayed] = useState(false);
   const [ready, setReady] = useState(false);
-  const [reduceMotion, setReduceMotion] = useState(false);
 
-  const frac = progress;
   const activeChapter = film.chapters.reduce(
-    (acc, c) => (frac + 0.0001 >= c.at ? c : acc),
+    (acc, c) => (progress + 0.0001 >= c.at ? c : acc),
     film.chapters[0],
   );
 
   const hoverCapable = () =>
     typeof window !== "undefined" && window.matchMedia("(hover: hover)").matches;
 
-  // --- Autoplay één keer wanneer de film ruim in beeld staat -----------------
-  const playOnce = useCallback(() => {
+  const play = useCallback(() => {
     const v = videoRef.current;
     if (!v) return;
     v.muted = true;
-    v.currentTime = 0;
+    if (v.ended || v.currentTime >= (v.duration || Infinity) - 0.05) {
+      v.currentTime = 0;
+    }
     const pr = v.play();
     if (pr && typeof pr.then === "function") pr.catch(() => {});
-    setPlaying(true);
+    setStarted(true);
   }, []);
 
-  useEffect(() => {
-    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const set = () => setReduceMotion(mq.matches);
-    set();
-    mq.addEventListener("change", set);
-    return () => mq.removeEventListener("change", set);
-  }, []);
-
-  useEffect(() => {
-    const stage = stageRef.current;
-    if (!stage) return;
-    const io = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((e) => {
-          if (
-            e.isIntersecting &&
-            e.intersectionRatio > 0.55 &&
-            !playedRef.current &&
-            !reduceMotion
-          ) {
-            playedRef.current = true;
-            io.disconnect();
-            playOnce();
-          }
-        });
-      },
-      { threshold: [0.55] },
-    );
-    io.observe(stage);
-    return () => io.disconnect();
-  }, [playOnce, reduceMotion]);
-
-  // --- Video-events → voortgang ---------------------------------------------
-  const onTime = () => {
+  const togglePlay = useCallback(() => {
     const v = videoRef.current;
-    if (!v || !v.duration) return;
-    if (!scrubbingRef.current) setProgress(v.currentTime / v.duration);
-  };
-  const onEnded = () => {
-    setPlaying(false);
-    setHasPlayed(true);
-  };
+    if (!v) return;
+    if (v.paused) play();
+    else v.pause();
+  }, [play]);
 
-  // --- Scrubben --------------------------------------------------------------
   const scrubToClientX = useCallback((clientX: number) => {
     const stage = stageRef.current;
     const v = videoRef.current;
@@ -103,19 +64,14 @@ export default function ShowcaseFilm({ film, index }: Props) {
     const p = Math.min(1, Math.max(0, (clientX - r.left) / r.width));
     v.pause();
     v.currentTime = p * v.duration;
-    setPlaying(false);
     setProgress(p);
   }, []);
 
-  const replay = useCallback(() => {
+  const onTime = () => {
     const v = videoRef.current;
-    if (!v) return;
-    v.muted = true;
-    v.currentTime = 0;
-    const pr = v.play();
-    if (pr && typeof pr.then === "function") pr.catch(() => {});
-    setPlaying(true);
-  }, []);
+    if (!v || !v.duration) return;
+    if (!scrubbingRef.current) setProgress(v.currentTime / v.duration);
+  };
 
   return (
     <article className="film" style={{ ["--film-accent" as string]: film.accent }}>
@@ -124,10 +80,13 @@ export default function ShowcaseFilm({ film, index }: Props) {
           ref={stageRef}
           className="film-stage"
           onMouseMove={(e) => {
-            if (hoverCapable() && hasPlayed) scrubToClientX(e.clientX);
+            // Desktop: na het spelen scrubben door over het beeld te bewegen.
+            if (hoverCapable() && started && !playing) scrubToClientX(e.clientX);
           }}
           onClick={() => {
-            if (!hoverCapable()) replay();
+            // Klik op het beeld start of pauzeert (touch en desktop).
+            if (!started) play();
+            else togglePlay();
           }}
         >
           <video
@@ -137,50 +96,73 @@ export default function ShowcaseFilm({ film, index }: Props) {
             poster={film.poster}
             muted
             playsInline
-            preload="metadata"
+            preload="none"
             onLoadedData={() => setReady(true)}
             onTimeUpdate={onTime}
-            onEnded={onEnded}
             onPlay={() => setPlaying(true)}
             onPause={() => setPlaying(false)}
+            onEnded={() => setPlaying(false)}
           />
-          {!ready && <div className="film-skeleton" aria-hidden="true" />}
 
           <span className="film-badge">Conceptwebsite · fictief merk</span>
 
-          <div className="film-chapter" aria-hidden="true">
-            <span className="film-chapter-dot" />
-            {activeChapter.label}
-          </div>
-
-          {(hasPlayed || reduceMotion) && !playing && (
+          {/* Grote afspeelknop: zichtbaar zolang er niet speelt. */}
+          {!playing && (
             <button
               type="button"
-              className="film-replay"
+              className={`film-play${started ? " is-replay" : ""}`}
               onClick={(e) => {
                 e.stopPropagation();
-                replay();
+                play();
               }}
-              aria-label={`Speel de transformatie van ${film.merk} opnieuw af`}
+              aria-label={
+                started
+                  ? `Speel de transformatie van ${film.merk} opnieuw af`
+                  : `Speel de transformatie van ${film.merk} af`
+              }
             >
-              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <path d="M3 12a9 9 0 1 0 3-6.7M3 4v4h4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-              Opnieuw
+              <span className="film-play-icon" aria-hidden="true">
+                {started ? (
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                    <path d="M3 12a9 9 0 1 0 3-6.7M3 4v4h4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                ) : (
+                  <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <path d="M8 5v14l11-7z" />
+                  </svg>
+                )}
+              </span>
+              <span className="film-play-label">
+                {started ? "Opnieuw afspelen" : "Speel de transformatie af"}
+              </span>
+              {!started && (
+                <span className="film-play-sub">±{film.chapters.length} fases · klik om te laden</span>
+              )}
             </button>
           )}
+
+          {(started || playing) && (
+            <div className="film-chapter" aria-hidden="true">
+              <span className="film-chapter-dot" />
+              {activeChapter.label}
+            </div>
+          )}
+
+          {started && !ready && <div className="film-loading" aria-hidden="true" />}
         </div>
 
-        {/* Tijdbalk: slepen om zelf door de film te scrubben (touch + muis). */}
+        {/* Tijdbalk: pas actief nadat de film is gestart. */}
         <div
-          className={`film-track${scrubbingRef.current ? " is-scrubbing" : ""}`}
+          className={`film-track${started ? "" : " is-idle"}`}
           role="slider"
           aria-label={`Scrub door de transformatie van ${film.merk}`}
           aria-valuemin={0}
           aria-valuemax={100}
           aria-valuenow={Math.round(progress * 100)}
-          tabIndex={0}
+          aria-disabled={!started}
+          tabIndex={started ? 0 : -1}
           onPointerDown={(e) => {
+            if (!started) return;
             e.currentTarget.setPointerCapture(e.pointerId);
             scrubbingRef.current = true;
             scrubToClientX(e.clientX);
@@ -196,7 +178,7 @@ export default function ShowcaseFilm({ film, index }: Props) {
           }}
           onKeyDown={(e) => {
             const v = videoRef.current;
-            if (!v || !v.duration) return;
+            if (!started || !v || !v.duration) return;
             if (e.key === "ArrowRight" || e.key === "ArrowLeft") {
               e.preventDefault();
               v.pause();
@@ -221,8 +203,14 @@ export default function ShowcaseFilm({ film, index }: Props) {
           ))}
         </div>
         <p className="film-hint" aria-hidden="true">
-          <span className="film-hint-desk">Beweeg over het beeld of sleep de balk om zelf te scrubben</span>
-          <span className="film-hint-touch">Sleep de balk of tik het beeld om opnieuw af te spelen</span>
+          {started ? (
+            <>
+              <span className="film-hint-desk">Beweeg over het beeld of sleep de balk om zelf te scrubben</span>
+              <span className="film-hint-touch">Sleep de balk of tik het beeld om te pauzeren</span>
+            </>
+          ) : (
+            "Klik om de transformatiefilm te laden en af te spelen"
+          )}
         </p>
       </div>
 
