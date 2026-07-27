@@ -111,12 +111,22 @@ export const addonGroepen: AddonGroep[] = [
           "Een opvallende WhatsApp-knop op je website, zodat klanten je met één tik een berichtje sturen. Eenmalig ingesteld.",
       },
       {
-        id: "spoed",
-        naam: "Spoed-oplevering",
-        prijs: "€149",
+        id: "watermerk",
+        naam: "Website zonder watermerk",
+        prijs: "€29",
         eenheid: "eenmalig",
         cartType: "eenmalig",
-        bedrag: 149,
+        bedrag: 29,
+        beschrijving:
+          "Wij verwijderen de kleine 'Website door HuurEenWebsite.nl'-vermelding onderaan je site, zodat de website helemaal van jou is.",
+      },
+      {
+        id: "spoed",
+        naam: "Spoed-oplevering",
+        prijs: "€99",
+        eenheid: "eenmalig",
+        cartType: "eenmalig",
+        bedrag: 99,
         beschrijving:
           "Haast? Dan zetten we jouw project vooraan in de rij en leveren we binnen 48 tot 72 uur op, in plaats van de gebruikelijke twee weken.",
       },
