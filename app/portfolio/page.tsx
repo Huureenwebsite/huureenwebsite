@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
-import PortfolioCurrentPage from "@/components/PortfolioCurrentPage";
+import PortfolioFilmPage from "@/components/PortfolioFilmPage";
 
 export const metadata: Metadata = {
-  title: "Portfolio: websites die wij bouwden",
+  title: "Portfolio: echte klanten & signature scroll-film",
   description:
-    "Bekijk ons eerdere werk: maatwerk websites en webshops voor ondernemers door heel Nederland, met een echte live preview.",
+    "Live websites die we voor echte ondernemers bouwden, plus onze signature scroll-film concept-showcases. Bekijk het werk en ontdek onze aanpak.",
   alternates: { canonical: "/portfolio" },
 };
 
 export default function Portfolio() {
-  return <PortfolioCurrentPage />;
+  return <PortfolioFilmPage />;
 }

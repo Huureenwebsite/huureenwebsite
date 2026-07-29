@@ -36,7 +36,7 @@ export const showcaseFilms: ShowcaseFilm[] = [
       "Eén vast camerastandpunt, de tuin die zich laag voor laag opbouwt tot een compleet zwembad — en in de finale gaat de verlichting aan.",
     techniekLabel: "AI-bouwfilm · locked camera",
     doorlooptijd: "±2 weken van intake tot live",
-    liveUrl: "/zwembadmaker",
+    liveUrl: "https://zwembadenmaker.huureenwebsite.nl",
     video: "/films/zwembaden.mp4",
     poster: "/films/zwembaden-poster.webp",
     chapters: [
@@ -56,7 +56,7 @@ export const showcaseFilms: ShowcaseFilm[] = [
       "Een leeg terras krijgt fundering, aluminium constructie, glas en afwerking — en verandert in de finale bij avondlicht in een warme leefruimte.",
     techniekLabel: "AI-bouwfilm · dag-naar-nacht",
     doorlooptijd: "±2 weken van intake tot live",
-    liveUrl: "/verandameester",
+    liveUrl: "https://verandameester.huureenwebsite.nl",
     video: "/films/veranda.mp4",
     poster: "/films/veranda-poster.webp",
     chapters: [
@@ -76,7 +76,7 @@ export const showcaseFilms: ShowcaseFilm[] = [
       "Een doffe coupé wordt gepolijst, gewrapt en gedetaild. In de laatste beelden draait het licht weg en neemt de satijnglans het beeld over.",
     techniekLabel: "AI-studiofilm · orbit",
     doorlooptijd: "±2 weken van intake tot live",
-    liveUrl: "/studiofolie",
+    liveUrl: "https://studiofolie.huureenwebsite.nl",
     video: "/films/carwrap.mp4",
     poster: "/films/carwrap-poster.webp",
     chapters: [
@@ -96,7 +96,7 @@ export const showcaseFilms: ShowcaseFilm[] = [
       "Dezelfde achtertuin in vier fases: verwilderd, gestript, uitgevlakt op een zandbed en opnieuw bestraat tot een strak terras.",
     techniekLabel: "Fase-transformatie · vaste camera",
     doorlooptijd: "±2 weken van intake tot live",
-    liveUrl: "/arbor-stone",
+    liveUrl: "https://houvenier.huureenwebsite.nl",
     video: "/films/houvenier.mp4",
     poster: "/films/houvenier-poster.webp",
     chapters: [
