@@ -26,8 +26,7 @@ export const projecten: Project[] = [
     sector: "Bouw, verbouwing & renovatie",
     kleur: "#3B5B7A", // staalblauw
     accent: "#C2A06B", // messing
-    // Live op de tijdelijke Vercel-URL; wordt jvbbouw.nl zodra het domein overgaat.
-    liveUrl: "https://jvb-bouw.vercel.app",
+    liveUrl: "https://www.jvbbouw.nl",
     kort: "Van een verouderde, oranje site naar een strakke, razendsnelle bouwwebsite met eigen CMS.",
     echt: true,
     intro:
