@@ -847,8 +847,17 @@ a,button{-webkit-tap-highlight-color:transparent}
 /* Responsive */
 @media (max-width:900px){
   .filmpage-head,.filmpage-proces-grid{grid-template-columns:1fr;gap:22px}
-  .film,.film:nth-child(even){grid-template-columns:1fr;gap:22px}
-  .film:nth-child(even) .film-media{order:0}
+  /* Mobiel: kop + titel + ondertitel eerst, dán de video, dan de omschrijving.
+     film-info wordt display:contents zodat zijn kinderen los te ordenen zijn. */
+  .film,.film:nth-child(even){grid-template-columns:1fr;gap:0}
+  .film-info{display:contents}
+  .film-info-top{order:1}
+  .film-info h3{order:2}
+  .film-tagline{order:3}
+  .film-media,.film:nth-child(even) .film-media{order:4;margin-bottom:20px}
+  .film-verhaal{order:5}
+  .film-meta{order:6}
+  .film-live{order:7}
   .clients-grid{grid-template-columns:1fr}
   .filmpage-films{padding:72px 0 24px}
   .client-card-live{top:22px;right:22px}
